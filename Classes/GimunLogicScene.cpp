@@ -1,4 +1,4 @@
-#include "GimunLogicScene.h"
+﻿#include "GimunLogicScene.h"
 
 USING_NS_CC;
 using namespace std;
@@ -26,12 +26,10 @@ bool GimunLogicScene::init() {
 	auto menu = Menu::create(closeButtonItem, NULL);
 	menu->setPosition(Vec2::ZERO);
 	this->addChild(menu, 1);
-
-	auto label = Label::createWithTTF(u8"�ȳ�?", "fonts/HYNAMM.TTF", 24);
+	
+	auto label = Label::createWithTTF(u8"안녕?", "fonts/HYNAMM.TTF", 24);
 	label->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - label->getContentSize().height));
 	this->addChild(label, 1);
-
-	log("gimun");
 
 	auto sprite = Sprite3D::create("res/cat_anim.c3b");
 	sprite->setPosition(Vec2(visibleSize.width / 2, origin.y + visibleSize.height / 2));
