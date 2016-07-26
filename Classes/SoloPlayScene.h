@@ -12,8 +12,13 @@ public:
 
 	virtual bool init();
 
-	void closeCallback(Ref* pSender);
+	float longitude, latitude;
 
+	Label* locationLabel;
+
+	void locationButtonCallback(Ref* pSender);
+	void closeCallback(Ref* pSender);
+	void abcCallBack(CCNode* target, void* data);
 	const int _puzzleSize = 10;
 	const float _quadSize = 40.0f;
 
