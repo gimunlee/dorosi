@@ -53,7 +53,7 @@ public:
  extern "C" {
 #endif
 
-void Java_org_mumblecore_location_CClocation_nativeupdatePosition(JNIEnv *env, jobject thiz, jdouble a, jdouble b);
+void Java_org_cocos2dx_cpp_CClocation_nativeupdatePosition(JNIEnv *env, jobject thiz, jdouble a, jdouble b);
 
 #ifdef __cplusplus
 }

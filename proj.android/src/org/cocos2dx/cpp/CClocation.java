@@ -95,10 +95,10 @@ Log.v("InternetConnection", "HELLO WORLD");
 	double longitude; // longitude
 
 	// The minimum distance to change Updates in meters
-	private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
+	private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 1; // 10 meters
 
 	// The minimum time between updates in milliseconds
-	private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
+	private static final long MIN_TIME_BW_UPDATES = 100 * 1 * 1; // 1 minute
 
 	// Declaring a Location Manager
 	protected LocationManager locationManager;

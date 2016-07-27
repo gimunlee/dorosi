@@ -10,10 +10,22 @@
 #include <string>
 #include <sstream>
 
+#include <cmath>
+
+#define pi 3.14159265358979323846
+#define earthRadiusKm 6371.0
+
 USING_NS_CC;
 USING_NS_CC_MATH;
 
 using namespace std;
+
+float distanceEarth(float lon1d, float lat1d, float lon2d, float lat2d){
+	float lon = (lon1d - lon2d) * 100;
+	float lat = (lat1d - lat2d) * 100;
+	
+	return lon * lon + lat * lat;
+}
 
 template <typename T>
 std::string to_string(T value) {
@@ -30,7 +42,8 @@ Vec2 centerVec2(Vec2 origin, Size visibleSize) {
 Scene* SoloPlayScene::createScene() {
 	auto scene = Scene::create();
 	auto layer = SoloPlayScene::create();
-	scene->addChild(layer);
+
+	scene->addChild(layer, 1);
 
 	return scene;
 }
@@ -42,7 +55,7 @@ Vec2 SoloPlayScene::tileVec2(int pos) {
 bool SoloPlayScene::init() {
 	if (!Layer::init())
 		return false;
-
+	
 	mVisibleSize = Director::getInstance()->getVisibleSize();
 	mOrigin = Director::getInstance()->getVisibleOrigin();
 
@@ -69,19 +82,49 @@ bool SoloPlayScene::init() {
 		this->addChild(locationMenu, 1);
 	}
 
+	{
+		{
+			auto buttonLeftItem = MenuItemImage::create("res/control_button/button_left.png", "res/control_button/button_left.png", CC_CALLBACK_1(SoloPlayScene::pressButtonLeftCallback, this));
+			buttonLeftItem->setScale(_buttonSize / buttonLeftItem->getContentSize().width);
+			buttonLeftItem->setPosition(Vec2(mOrigin.x + _buttonSize * 0.5f, mOrigin.y + _buttonSize * 1.5f));
+			buttonLeftItem->setOpacity(opacity_button);
+			auto buttonLeftMenu = Menu::create(buttonLeftItem, NULL);
+			buttonLeftMenu->setPosition(Vec2::ZERO);
+			this->addChild(buttonLeftMenu, 2);
+		}
+		{
+			auto buttonRightItem = MenuItemImage::create("res/control_button/button_right.png", "res/control_button/button_right.png", CC_CALLBACK_1(SoloPlayScene::pressButtonRightCallback, this));
+			buttonRightItem->setScale(_buttonSize / buttonRightItem->getContentSize().width);
+			buttonRightItem->setPosition(Vec2(mOrigin.x + _buttonSize * 2.5f, mOrigin.y + _buttonSize * 1.5f));
+			buttonRightItem->setOpacity(opacity_button);
+			auto buttonRightMenu = Menu::create(buttonRightItem, NULL);
+			buttonRightMenu->setPosition(Vec2::ZERO);
+			this->addChild(buttonRightMenu, 2);
+		}
+		{
+			auto buttonUpItem = MenuItemImage::create("res/control_button/button_up.png", "res/control_button/button_up.png", CC_CALLBACK_1(SoloPlayScene::pressButtonUpCallback, this));
+			buttonUpItem->setScale(_buttonSize / buttonUpItem->getContentSize().width);
+			buttonUpItem->setPosition(Vec2(mOrigin.x + _buttonSize * 1.5f, mOrigin.y + _buttonSize * 2.5f));
+			buttonUpItem->setOpacity(opacity_button);
+			auto buttonUpMenu = Menu::create(buttonUpItem, NULL);
+			buttonUpMenu->setPosition(Vec2::ZERO);
+			this->addChild(buttonUpMenu, 2);
+		}
+		{
+			auto buttonDownItem = MenuItemImage::create("res/control_button/button_down.png", "res/control_button/button_down.png", CC_CALLBACK_1(SoloPlayScene::pressButtonDownCallback, this));
+			buttonDownItem->setScale(_buttonSize / buttonDownItem->getContentSize().width);
+			buttonDownItem->setPosition(Vec2(mOrigin.x + _buttonSize * 1.5f, mOrigin.y + _buttonSize * 0.5f));
+			buttonDownItem->setOpacity(opacity_button);
+			auto buttonDownMenu = Menu::create(buttonDownItem, NULL);
+			buttonDownMenu->setPosition(Vec2::ZERO);
+			this->addChild(buttonDownMenu, 2);
+		}
+	}
+
 	
 	answerLabel = Label::createWithTTF(u8"안녕?", "fonts/HYNAMM.TTF", 24);
 	answerLabel->setPosition(Vec2(mOrigin.x + answerLabel->getContentSize().width/2.0f, mOrigin.y + mVisibleSize.height - answerLabel->getContentSize().height));
 	this->addChild(answerLabel, 1);
-
-/*	auto sprite = Sprite3D::create("res/cat_anim.c3b");
-	sprite->setPosition(Vec2(visibleSize.width / 2, origin.y + visibleSize.height / 2));
-	sprite->setScale(0.5f);
-	sprite->setAnchorPoint(Point(0.5f, 0.5f));
-	auto animation = Animation3D::create("res/cat_anim.c3b");
-	auto animate = Animate3D::create(animation);
-	sprite->runAction(RepeatForever::create(animate));
-	this->addChild(sprite, 0);*/
 
 	words = { "항","아","비","장","보","피","닉","스","치","파",
 		"호","스","레","젤","앤","스","로","마","리","타",
@@ -153,11 +196,12 @@ bool SoloPlayScene::init() {
 	this->addChild(board,1);
 
 	mCat->setPosition(tiles[currentPos]->getPosition());
+
+
 //	tiles[currentPos]->setColor(Color3B::BLUE);
 
-	auto keyboardEventListener = EventListenerKeyboard::create();
+/*	auto keyboardEventListener = EventListenerKeyboard::create();
 	keyboardEventListener->onKeyPressed = [](EventKeyboard::KeyCode keyCode, Event* event) {
-//		Vec2 loc = event->getCurrentTarget()->getPosition();
 		switch (keyCode) {
 		case EventKeyboard::KeyCode::KEY_LEFT_ARROW:
 		case EventKeyboard::KeyCode::KEY_A:
@@ -177,12 +221,11 @@ bool SoloPlayScene::init() {
 			break;
 		case EventKeyboard::KeyCode::KEY_SPACE:
 		case EventKeyboard::KeyCode::KEY_ENTER:
-//			((SoloPlayScene*)(event->getCurrentTarget()))->showFlag();
 			((SoloPlayScene*)(event->getCurrentTarget()))->onFlag();
 			break;
 		}
 	};
-	this->_eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardEventListener, this);
+	this->_eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardEventListener, this);*/
 
 	CCCoreLocation::getInstance()->getLocation(this, callfuncND_selector(SoloPlayScene::abcCallBack));
 
@@ -192,15 +235,48 @@ bool SoloPlayScene::init() {
 void SoloPlayScene::abcCallBack(CCNode* target, void* data) {
 	longitude = *((float *)data);
 	latitude = *((float *)data + 1);
-
-	log("longitude");
-
-	log("longitude: %f, latitude: %f", longitude, latitude);
 }
+
+void SoloPlayScene::pressButtonLeftCallback(Ref* pSender) {
+	
+}
+void SoloPlayScene::pressButtonRightCallback(Ref* pSender) {
+
+}
+void SoloPlayScene::pressButtonUpCallback(Ref* pSender) {
+
+}
+void SoloPlayScene::pressButtonDownCallback(Ref* pSender) {
+
+}
+
+
 
 void SoloPlayScene::locationButtonCallback(Ref* pSender) {
 	CCCoreLocation::getInstance()->getLocation(this, callfuncND_selector(SoloPlayScene::abcCallBack));
-	locationLabel->setString(to_string(longitude) + to_string(latitude));
+		
+	strcpy(myLocation.name, locationData[0].name);
+	myLocation.longitude = locationData[0].longitude;
+	myLocation.latitude = locationData[0].latitude;
+
+	float distance_now = distanceEarth(longitude, latitude, myLocation.longitude, myLocation.latitude);
+	float distance_temp;
+
+	for (int i = 0; i < sizeof(locationData) / sizeof(locationData[0]); i++) {
+		CCLOG("distance from here to %s: %f", locationData[i].name, distanceEarth(longitude, latitude, locationData[i].longitude, locationData[i].latitude));
+	}
+
+	for (int i = 1; i < sizeof(locationData) / sizeof(locationData[0]); i++) {
+		distance_temp = distanceEarth(longitude, latitude, locationData[i].longitude, locationData[i].latitude);
+		if (distance_now > distance_temp) {
+			strcpy(myLocation.name, locationData[i].name);
+			myLocation.longitude = locationData[i].longitude;
+			myLocation.latitude = locationData[i].latitude;
+			distance_now = distance_temp;
+		}
+	}
+
+	locationLabel->setString(myLocation.name);
 }
 
 void SoloPlayScene::closeCallback(Ref* pSender) {
@@ -246,9 +322,6 @@ void SoloPlayScene::onFlag() {
 	int deltaX, deltaY;
 	deltaX = norm(currentX-flagX);
 	deltaY = norm(currentY- flagY);
-	//log((string("deltaX = ") + std::to_string(deltaX)).c_str());
-	//log((string("deltaY = ") + std::to_string(deltaY)).c_str());
-	//log("==========");
 
 	if ((deltaX*deltaY == 0 || abs(currentX - flagX) == abs(currentY - flagY)) && flagPos!=-1) {
 
@@ -276,6 +349,7 @@ void SoloPlayScene::onFlag() {
 		}
 
 		answerLabel->setString(word);
+		
 		answerLabel->setPosition(Vec2(mOrigin.x + answerLabel->getContentSize().width / 2.0f, mOrigin.y + mVisibleSize.height - answerLabel->getContentSize().height));
 	}
 	showFlag();
