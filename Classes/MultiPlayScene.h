@@ -22,9 +22,18 @@ public:
 
 	//constants
 	int _puzzleSize = 15;
+	const float _buttonSize = 50.0f;
 	const float _quadSize = 30.0f;
-	const float _dorosiScale = 0.1;
+	const float _dorosiScale = 0.15;
+	const float _lettersScale = 2.0f;
 	const Vec3 _dorosiRotation = Vec3(90, 0, 0);
+
+	//UI
+	void onLeftButtonCallback(Ref* pSender);
+	void onRightButtonCallback(Ref* pSender);
+	void onUpButtonCallback(Ref* pSender);
+	void onDownButtonCallback(Ref* pSender);
+	void onFlagButtonCallback(Ref* pSender);
 
 	//Screen info
 	Size mVisibleSize;
@@ -47,7 +56,7 @@ public:
 
 	//Network
 	SIOClient* mClient;
-	const string _dorosiid = "gimunDo";
+	const string _dorosiid = "5gimunDo";
 	const string _socketServerUrl = "http://143.248.48.232:10240";
 
 	void onTweet(SIOClient* client, const string& dataStr);

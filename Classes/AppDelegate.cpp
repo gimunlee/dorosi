@@ -84,6 +84,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	//director->runWithScene(soloPlayScene);
 
 	auto multiPlayScene = MultiPlayScene::createScene();
+	//auto multiPlayScene = MultiPlayScene::createScene();
 	director->runWithScene(multiPlayScene);
 
     return true;
