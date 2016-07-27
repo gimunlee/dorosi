@@ -26,6 +26,7 @@ Sprite3D* MultiPlayScene::createCat(string dorosiid) {
 	cat->runAction(RepeatForever::create(Sequence::create(DelayTime::create(1.0f), animate, NULL)));
 	cat->setGlobalZOrder(10000);
 	cat->setRotation3D(_dorosiRotation);
+	cat->setPosition(Point(-1, -1));
 
 	mBoard->addChild(cat);
 
@@ -60,15 +61,21 @@ bool MultiPlayScene::init() {
 			tile->setScale(_quadSize / tile->getContentSize().width);
 			tile->setPosition(tileVec2(i));
 
-			auto letter = Label::createWithTTF("", "fonts/HYNAMM.TTF", 24);
-			letter->setColor(Color3B::GRAY);
-			letter->setPosition(centerVec2(Point(0, 0), tile->getContentSize()));
+//			auto letter = Label::createWithTTF("", "fonts/HYNAMM.TTF", 24);
+	//		letter->setColor(Color3B::GRAY);
+		//	letter->setPosition(centerVec2(Point(0, 0), tile->getContentSize()));
 
-			tile->addChild(letter);
+			//tile->addChild(letter);
 			mBoard->addChild(tile, 2);
 
 			tiles.push_back(tile);
 		}
+	}
+	{
+		auto letters = Sprite::create("res/capitals.png");
+		letters->setPosition(Point(0, 0));
+		letters->setScale(1.3);
+		mBoard->addChild(letters, 3);
 	}
 	{
 		auto flag = Sprite::create("res/Flag_small.png");
@@ -81,11 +88,11 @@ bool MultiPlayScene::init() {
 	this->addChild(mBoard, 1);
 
 	//Network
-	_client = SocketIO::connect(_socketServerUrl, *this);
-	_client->on("updateboard", CC_CALLBACK_2(MultiPlayScene::onUpdateBoard, this));
-//	_client->on("tweet", CC_CALLBACK_2(MultiPlayScene::onTweet, this));
-	_client->on("testa", CC_CALLBACK_2(MultiPlayScene::onTesta, this));
-	_client->on("connect", CC_CALLBACK_2(MultiPlayScene::onConnect, this));
+	mClient = SocketIO::connect(_socketServerUrl, *this);
+	mClient->on("load", CC_CALLBACK_2(MultiPlayScene::onLoad, this));
+//	mClient->on("tweet", CC_CALLBACK_2(MultiPlayScene::onTweet, this));
+	mClient->on("testa", CC_CALLBACK_2(MultiPlayScene::onTesta, this));
+	mClient->on("connect", CC_CALLBACK_2(MultiPlayScene::onConnect, this));
 
 	auto keyboardEventListener = EventListenerKeyboard::create();
 	keyboardEventListener->onKeyPressed = [this](EventKeyboard::KeyCode keyCode, Event* event) {
@@ -108,6 +115,7 @@ bool MultiPlayScene::init() {
 			break;
 		case EventKeyboard::KeyCode::KEY_SPACE:
 		case EventKeyboard::KeyCode::KEY_ENTER:
+			emitFlag();
 			break;
 		}
 	};
@@ -117,7 +125,10 @@ bool MultiPlayScene::init() {
 }
 
 void MultiPlayScene::emitMove(string direction) {
-	_client->emit("move", (string("{\"roomtag\":\"gimunRoom\",\"dorosiid\":\"") + _dorosiid + string("\",\"direction\":\"") + direction + string("\"}")).c_str());
+	mClient->emit("move", (string("{\"roomtag\":\"gimunRoom\",\"dorosiid\":\"") + _dorosiid + string("\",\"direction\":\"") + direction + string("\"}")).c_str());
+}
+void MultiPlayScene::emitFlag() {
+	mClient->emit("flag", (string("{\"roomtag\":\"gimunRoom\",\"dorosiid\":\"") + _dorosiid + string("\"}")).c_str());
 }
 
 void MultiPlayScene::onTesta(SIOClient* client, const string& dataStr) {
@@ -132,6 +143,36 @@ void MultiPlayScene::closeCallback(Ref* pSender) {
 #endif
 }
 
+void MultiPlayScene::onLoad(SIOClient* client, const string& dataStr) {
+	Json::Reader reader;
+	Json::Value dataValue;
+
+	if (reader.parse(dataStr, dataValue)) {
+		Json::Value& answersValue = dataValue["answers"];
+		log("answers.size() = %d", answersValue.size());
+		for (int i = 0; i < answersValue.size(); i++)
+			mAnswers.push_back(answersValue[i].asString());
+
+		Json::Value& wordsValue = dataValue["words"];
+		log("words.size() = %d", wordsValue.size());
+		for (int i = 0; i < wordsValue.size(); i++) {
+			mWords.push_back(wordsValue[i].asString());
+			log(mWords[i].c_str());
+			/*auto letter = Label::createWithTTF(mWords[i], "fonts/HYNAMM.TTF", 30);
+			letter->setColor(Color3B::BLACK);
+			letter->setPosition(centerVec2(Point(0, 0), tiles[i]->getContentSize()));
+			tiles[i]->addChild(letter);*/
+		}
+
+		mClient->on("updateboard", CC_CALLBACK_2(MultiPlayScene::onUpdateBoard, this));
+		mClient->emit("load completed", (string("{\"dorosiid\":\"") + _dorosiid + string("\",\"result\":\"true\"}")).c_str());
+	}
+	else {
+		log((string("json parsing failed") + reader.getFormattedErrorMessages()).c_str());
+		return;
+	}
+}
+
 void MultiPlayScene::onUpdateBoard(SIOClient* client, const string& dataStr) {
 	Json::Reader reader;
 	Json::Value dataValue;
@@ -142,11 +183,25 @@ void MultiPlayScene::onUpdateBoard(SIOClient* client, const string& dataStr) {
 		Json::Value& tileInfos = dataValue["tiles"];
 		log((string("tileinfos.size() = ") +to_string(tileInfos.size())).c_str());
 		for (int i = 0; i < tileInfos.size();i++) {
-			switch (tileInfos[i].asInt()) {
-			case 0: tiles[i]->setColor(Color3B::GRAY); break;
-			case 1: tiles[i]->setColor(Color3B::YELLOW); break;
-			case 2: tiles[i]->setColor(Color3B::BLUE); break;
-			case 3: tiles[i]->setColor(Color3B::RED); break;
+			int oldTileInfo=-1;
+			if (tiles[i]->getColor() == Color3B::GRAY) oldTileInfo = 0;
+			if (tiles[i]->getColor() == Color3B::YELLOW) oldTileInfo = 1;
+			if (tiles[i]->getColor() == Color3B::BLUE) oldTileInfo = 2;
+			if (tiles[i]->getColor() == Color3B::RED) oldTileInfo = 3;
+
+			if (tileInfos[i].asInt() != oldTileInfo) {
+				float oldScale = tiles[i]->getScale();
+				tiles[i]->setScale(oldScale/100);
+				auto animate = EaseElasticOut::create(ScaleTo::create(0.8f, oldScale),0.8f);
+				tiles[i]->stopAllActions();
+				tiles[i]->runAction(animate);
+
+				switch (tileInfos[i].asInt()) {
+				case 0: tiles[i]->setColor(Color3B::GRAY); break;
+				case 1: tiles[i]->setColor(Color3B::YELLOW); break;
+				case 2: tiles[i]->setColor(Color3B::BLUE); break;
+				case 3: tiles[i]->setColor(Color3B::RED); break;
+				}
 			}
 		}
 		log("==========================================updating dorosis");
@@ -158,7 +213,22 @@ void MultiPlayScene::onUpdateBoard(SIOClient* client, const string& dataStr) {
 //			Sprite3D* dorosiSprite=(Sprite3D*)getChildByName(dorosi["dorosiid"].asString());
 			if (dorosiSprite == NULL)
 				dorosiSprite = createCat(dorosi["dorosiid"].asString());
-			dorosiSprite->setPosition(tiles[dorosi["dorosiposition"].asInt()]->getPosition());
+			Vec2 oldPos = dorosiSprite->getPosition();
+			Vec2 newPos = tiles[dorosi["dorosiposition"].asInt()]->getPosition();
+			if (oldPos != newPos) {
+				dorosiSprite->stopActionByTag(7);
+				auto animate = EaseOut::create(MoveTo::create(0.05f, newPos),0.8f);
+				animate->setTag(7);
+				dorosiSprite->runAction(animate);
+			}
+			if (dorosi["dorosiid"].asString() == _dorosiid) {
+				// If it's me,
+				if (dorosi["flagposition"].asInt() != -1) {
+					mFlag->setVisible(true);
+					mFlag->setPosition(tiles[dorosi["flagposition"].asInt()]->getPosition());
+				}
+			}
+//			dorosiSprite->setPosition(tiles[dorosi["dorosiposition"].asInt()]->getPosition());
 		}
 		client->emit("update success", (string("{\"dorosiid\":\"") + _dorosiid + string("\",\"roomtag\":\"") + string("gimunRoom") + string("\"}")).c_str());
 	}
@@ -183,13 +253,14 @@ void MultiPlayScene::onTweet(SIOClient* client, const string& dataStr) {
 }
 void MultiPlayScene::onConnect(SIOClient* client, const string& dataStr) {
 	log("== Connected");
-	_client->emit("join", (string("{\"roomtag\":\"gimunRoom\",\"dorosiid\":\"") + _dorosiid +  string("\",\"team\":\"1\"}")).c_str());
+	mClient->emit("join", (string("{\"roomtag\":\"gimunRoom\",\"dorosiid\":\"") + _dorosiid +  string("\",\"team\":\"1\"}")).c_str());
 }
 void MultiPlayScene::onMessage(SIOClient* client, const string& dataStr) {
 //	log((string("== Message ") + dataStr).c_str());
 }
 void MultiPlayScene::onClose(SIOClient* client) {
 	log("== Close");
+	closeCallback(NULL);
 }
 void MultiPlayScene::onError(SIOClient* client, const string& dataStr) {
 	log((string("== Error ") + dataStr).c_str());

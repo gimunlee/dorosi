@@ -21,9 +21,9 @@ public:
 	void closeCallback(Ref* pSender);
 
 	//constants
-	const int _puzzleSize = 20;
-	const float _quadSize = 20.0f;
-	const float _dorosiScale = 0.08;
+	int _puzzleSize = 15;
+	const float _quadSize = 30.0f;
+	const float _dorosiScale = 0.1;
 	const Vec3 _dorosiRotation = Vec3(90, 0, 0);
 
 	//Screen info
@@ -39,15 +39,20 @@ public:
 	vector<Sprite*> tiles;
 	Vec2 tileVec2(int pos);
 
+	//Data
+	vector<string> mWords;
+	vector<string> mAnswers;
+
 	Sprite3D* createCat(string dorosiid);
 
 	//Network
-	SIOClient* _client;
+	SIOClient* mClient;
 	const string _dorosiid = "gimunDo";
 	const string _socketServerUrl = "http://143.248.48.232:10240";
 
 	void onTweet(SIOClient* client, const string& dataStr);
 	void onUpdateBoard(SIOClient* client, const string& dataStr);
+	void onLoad(SIOClient* client, const string& dataStr);
 
 	void onTesta(SIOClient* client, const string& dataStr);
 
@@ -59,6 +64,7 @@ public:
 	void updateBoard();
 
 	void emitMove(string direction);
+	void emitFlag();
 
 	CREATE_FUNC(MultiPlayScene);
 };
