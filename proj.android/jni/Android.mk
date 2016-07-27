@@ -6,21 +6,27 @@ $(call import-add-path,$(LOCAL_PATH)/../../cocos2d)
 $(call import-add-path,$(LOCAL_PATH)/../../cocos2d/external)
 $(call import-add-path,$(LOCAL_PATH)/../../cocos2d/cocos)
 $(call import-add-path,$(LOCAL_PATH)/../../cocos2d/cocos/audio/include)
+$(call import-add-path, $(LOCAL_PATH))
 
 LOCAL_MODULE := MyGame_shared
 
 LOCAL_MODULE_FILENAME := libMyGame
 
 LOCAL_SRC_FILES := hellocpp/main.cpp \
-                   ../../Classes/AppDelegate.cpp \
-                   ../../Classes/SoloPlayScene.cpp \
-                   ../../Classes/PuzzleMapScene.cpp \
-                   ../../Classes/CCCoreLocation.cpp \
-                   ../../Classes/android/InterfaceJNI.cpp
+../../Classes/AppDelegate.cpp \
+../../Classes/SoloPlayScene.cpp \
+../../Classes/PuzzleMapScene.cpp \
+../../Classes/CCCoreLocation.cpp \
+../../Classes/android/InterfaceJNI.cpp
 
 
 
+LOCAL_CPPFLAGS := -DSDKBOX_ENABLED
+LOCAL_LDLIBS := -landroid \
+-llog
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
+LOCAL_WHOLE_STATIC_LIBRARIES := PluginFacebook \
+sdkbox
 
 # _COCOS_HEADER_ANDROID_BEGIN
 # _COCOS_HEADER_ANDROID_END
@@ -34,6 +40,8 @@ LOCAL_STATIC_LIBRARIES := cocos2dx_static
 include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module,.)
+$(call import-module, ./sdkbox)
+$(call import-module, ./pluginfacebook)
 
 # _COCOS_LIB_IMPORT_ANDROID_BEGIN
 # _COCOS_LIB_IMPORT_ANDROID_END

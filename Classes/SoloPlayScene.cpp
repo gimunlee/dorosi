@@ -10,10 +10,7 @@
 #include <string>
 #include <sstream>
 
-#include <cmath>
-
-#define pi 3.14159265358979323846
-#define earthRadiusKm 6371.0
+#include "PluginFacebook/PluginFacebook.h"
 
 USING_NS_CC;
 USING_NS_CC_MATH;
@@ -56,6 +53,8 @@ bool SoloPlayScene::init() {
 	if (!Layer::init())
 		return false;
 	
+	sdkbox::PluginFacebook::login();
+
 	mVisibleSize = Director::getInstance()->getVisibleSize();
 	mOrigin = Director::getInstance()->getVisibleOrigin();
 
