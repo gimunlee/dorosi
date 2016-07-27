@@ -4,6 +4,7 @@
 //#include "HelloWorldScene.h"
 #include "GimunLogicScene.h"
 #include "SoloPlayScene.h"
+#include "MultiPlayScene.h"
 
 USING_NS_CC;
 
@@ -78,18 +79,12 @@ bool AppDelegate::applicationDidFinishLaunching() {
     register_all_packages();
 
     // create a scene. it's an autorelease object
-//    auto scene = PuzzleMap::createScene();
-    //auto scene = HelloWorld::createScene();
 
-    // run
-    //director->runWithScene(scene);
+//	auto soloPlayScene = SoloPlayScene::createScene();
+	//director->runWithScene(soloPlayScene);
 
-//	auto gimunScene = GimunLogicScene::createScene();
-
-//	director->runWithScene(gimunScene);
-
-	auto soloPlayScene = SoloPlayScene::createScene();
-	director->runWithScene(soloPlayScene);
+	auto multiPlayScene = MultiPlayScene::createScene();
+	director->runWithScene(multiPlayScene);
 
     return true;
 }

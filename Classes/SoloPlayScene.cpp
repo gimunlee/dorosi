@@ -1,14 +1,11 @@
 ﻿#include "SoloPlayScene.h"
+#include "commonFunc.h"
 #pragma execution_character_set("utf-8")
 
 USING_NS_CC;
 USING_NS_CC_MATH;
 
 using namespace std;
-
-Vec2 centerVec2(Vec2 origin, Size visibleSize) {
-	return Vec2(origin.x + visibleSize.width / 2.0f , origin.y + visibleSize.height);
-}
 
 
 Scene* SoloPlayScene::createScene() {
@@ -105,6 +102,7 @@ bool SoloPlayScene::init() {
 	}
 
 	mCat = Sprite3D::create("res/cat_anim.c3b");
+	mCat->setTexture("res/green_cat_pot.png");
 	//	sprite->setPosition(Vec2(mVisibleSize.width / 2, origin.y + visibleSize.height / 2));
 		mCat->setScale(_puzzleSize/mCat->getContentSize().width*2);
 	//mCat->setScale(1.0f);

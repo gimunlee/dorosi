@@ -7,6 +7,9 @@
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="..\Classes\SoloPlayScene.cpp" />
+    <ClCompile Include="..\Classes\MultiPlayScene.cpp" />
+    <ClCompile Include="..\Classes\commonFunc.cpp" />
+    <ClCompile Include="..\Classes\jsoncpp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h" />
@@ -15,6 +18,10 @@
     <ClInclude Include="..\Classes\HelloWorldScene.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="..\Classes\SoloPlayScene.h" />
+    <ClInclude Include="..\Classes\commonFunc.h" />
+    <ClInclude Include="..\Classes\MultiPlayScene.h" />
+    <ClInclude Include="..\Classes\json\json.h" />
+    <ClInclude Include="..\Classes\json\json-forwards.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="game.rc" />
